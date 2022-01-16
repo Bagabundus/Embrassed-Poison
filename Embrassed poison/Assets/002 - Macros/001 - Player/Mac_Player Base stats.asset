@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1893448595, guid: a040fb66244a7f54289914d98ea4ef7d, type: 3}
+  m_Name: Mac_Player Base stats
+  m_EditorClassIdentifier: 
+  _data:
+    _json: '{"graph":{"variables":{"collection":{"$content":[],"$version":"A"},"$version":"A"},"controlInputDefinitions":[],"controlOutputDefinitions":[],"valueInputDefinitions":[],"valueOutputDefinitions":[{"_type":"System.Single","key":"Speed","label":null,"summary":null,"hideLabel":false},{"_type":"System.Single","key":"JumpForce","label":null,"summary":null,"hideLabel":false},{"_type":"System.Single","key":"MaxLife","label":null,"summary":null,"hideLabel":false},{"_type":"System.Single","key":"Fall
+      Multiplicateur","label":null,"summary":null,"hideLabel":false},{"_type":"System.Single","key":"LowJump
+      Multiplicateur","label":null,"summary":null,"hideLabel":false}],"title":null,"summary":null,"pan":{"x":-187.2619,"y":40.90982},"zoom":0.9499999,"elements":[{"type":"System.Single","value":{"$content":4.0,"$type":"System.Single"},"defaultValues":{},"position":{"x":-341.0,"y":-88.0},"guid":"4aafd66c-5748-4cdc-8c3e-339e43a3b655","$version":"A","$type":"Bolt.Literal","$id":"14"},{"type":"System.Single","value":{"$content":10.0,"$type":"System.Single"},"defaultValues":{},"position":{"x":-341.0,"y":32.0},"guid":"67b9a36d-0471-4ea1-9a3f-9ad44bec559e","$version":"A","$type":"Bolt.Literal","$id":"16"},{"type":"System.Single","value":{"$content":10.0,"$type":"System.Single"},"defaultValues":{},"position":{"x":-339.0,"y":153.0},"guid":"5664b4fa-eb9b-4dcd-bf4e-29f1d7d0f61e","$version":"A","$type":"Bolt.Literal","$id":"18"},{"defaultValues":{},"position":{"x":-149.0,"y":-83.0},"guid":"dbc90acd-2bc1-49f2-b198-51837f3025ee","$version":"A","$type":"Bolt.GraphOutput","$id":"20"},{"type":"System.Single","value":{"$content":5.0,"$type":"System.Single"},"defaultValues":{},"position":{"x":-339.0,"y":275.0},"guid":"8882ec6c-105d-43fd-a11d-7fe928a03865","$version":"A","$type":"Bolt.Literal","$id":"22"},{"type":"System.Single","value":{"$content":3.0,"$type":"System.Single"},"defaultValues":{},"position":{"x":-340.0,"y":397.0},"guid":"a4d1d738-0351-41ea-80c4-30d9fc6d7aec","$version":"A","$type":"Bolt.Literal","$id":"24"},{"sourceUnit":{"$ref":"14"},"sourceKey":"output","destinationUnit":{"$ref":"20"},"destinationKey":"Speed","guid":"e9a3d31f-2a90-4b95-a214-836b722e02f9","$type":"Bolt.ValueConnection"},{"sourceUnit":{"$ref":"16"},"sourceKey":"output","destinationUnit":{"$ref":"20"},"destinationKey":"JumpForce","guid":"c3e20fba-e423-4659-8b6c-c4046446e3df","$type":"Bolt.ValueConnection"},{"sourceUnit":{"$ref":"18"},"sourceKey":"output","destinationUnit":{"$ref":"20"},"destinationKey":"MaxLife","guid":"37817c67-b242-4309-890a-c0f14d924ba2","$type":"Bolt.ValueConnection"},{"sourceUnit":{"$ref":"24"},"sourceKey":"output","destinationUnit":{"$ref":"20"},"destinationKey":"LowJump
+      Multiplicateur","guid":"88f136af-1290-40db-bbee-8a4faa9613ba","$type":"Bolt.ValueConnection"},{"sourceUnit":{"$ref":"22"},"sourceKey":"output","destinationUnit":{"$ref":"20"},"destinationKey":"Fall
+      Multiplicateur","guid":"1825b9ae-35ea-4669-910b-816c68f57aa7","$type":"Bolt.ValueConnection"},{"position":{"xMin":-478.0,"yMin":-120.0,"xMax":-240.0,"yMax":1.0},"label":"Speed","comment":null,"color":{"r":0.0,"g":0.0,"b":0.0,"a":1.0},"guid":"3618514c-6d06-4028-95b4-dd5b9b725d4c","$version":"A","$type":"Ludiq.GraphGroup"},{"position":{"xMin":-479.0,"yMin":1.0,"xMax":-241.0,"yMax":122.0},"label":"Jump
+      Force","comment":null,"color":{"r":0.0,"g":0.0,"b":0.0,"a":1.0},"guid":"91df92d7-0c3f-451d-a566-8eafed0966ea","$version":"A","$type":"Ludiq.GraphGroup"},{"position":{"xMin":-478.0,"yMin":123.0,"xMax":-240.0,"yMax":244.0},"label":"Max
+      Life","comment":null,"color":{"r":0.0,"g":0.0,"b":0.0,"a":1.0},"guid":"a94551a8-0283-4b12-9ea2-9d7a247f2e0c","$version":"A","$type":"Ludiq.GraphGroup"},{"position":{"xMin":-478.0,"yMin":245.0,"xMax":-240.0,"yMax":366.0},"label":"Fall
+      Multiplicateur","comment":null,"color":{"r":0.0,"g":0.0,"b":0.0,"a":1.0},"guid":"31b00f79-c85e-4845-bf6e-af159364b3ed","$version":"A","$type":"Ludiq.GraphGroup"},{"position":{"xMin":-479.0,"yMin":367.0,"xMax":-241.0,"yMax":488.0},"label":"Low
+      Jump multiplicateur","comment":null,"color":{"r":0.0,"g":0.0,"b":0.0,"a":1.0},"guid":"41d25954-59b0-41c8-ac51-61bdf3edc340","$version":"A","$type":"Ludiq.GraphGroup"}],"$version":"A"}}'
+    _objectReferences: []
