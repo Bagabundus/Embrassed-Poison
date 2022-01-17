@@ -1382,7 +1382,7 @@ MonoBehaviour:
   CurrentWeaponState: 0
   health: 10
   XSpeed: 2.5
-  JumpStrength: 5
+  JumpStrength: 7
   fallMultiplyer: 3
   lowJumpMultipliyer: 2
   MaxGameSpeed: 10

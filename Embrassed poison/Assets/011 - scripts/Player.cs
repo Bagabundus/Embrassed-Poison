@@ -40,7 +40,6 @@ public class Player : MonoBehaviour, IPausable
 
     public float MaxGameSpeed = 10;
 
-
     [Space(10)]
     public Weapon[] inventory = new Weapon[9];
 
@@ -75,6 +74,7 @@ public class Player : MonoBehaviour, IPausable
     private float gravity = 9.8f;
     private float RecoilTime = 0;
     private Camera mCamera;
+    private int indexCurentWeapon = 0;
 
     private HashSet<wState> shootSimpleCondition = new HashSet<wState> {wState.LastBullets, wState.FullBullets};
     private HashSet<wState> reloadCondition = new HashSet<wState> {wState.NeedReload, wState.FullBullets};
@@ -167,9 +167,9 @@ public class Player : MonoBehaviour, IPausable
             if (shootSimpleCondition.Contains(CurrentWeaponState)) 
             {
                 Shoot();
-                if (inventory[0].shootingMode == Weapon.mode.semiAutoWithRecoil)
+                if (inventory[indexCurentWeapon].shootingMode == Weapon.mode.semiAutoWithRecoil)
                 {
-                    Debug.Log("WAY!");
+
                     ApplyRecoil();
                     InvincibilityOnRecoil();
                 }
@@ -185,11 +185,11 @@ public class Player : MonoBehaviour, IPausable
     } 
     public void Shoot()
     {
-        ParticleSystem ps = Instantiate(inventory[0].FXBullet, barrelExit.transform.position, barrelExit.transform.rotation, psParent.transform);// spawn tir
+        ParticleSystem ps = Instantiate(inventory[indexCurentWeapon].FXBullet, barrelExit.transform.position, barrelExit.transform.rotation, psParent.transform);// spawn tir
         ps.Play();
         Destroy(ps.gameObject, 2);
-        inventory[0].CurrentBulletInMagazine--; // --ammo
-        inventory[0].CurrentBulletInMagazine = Mathf.Clamp(inventory[0].CurrentBulletInMagazine, 0, inventory[0].MaxBulletInMagazine);
+        inventory[indexCurentWeapon].CurrentBulletInMagazine--; // --ammo
+        inventory[indexCurentWeapon].CurrentBulletInMagazine = Mathf.Clamp(inventory[indexCurentWeapon].CurrentBulletInMagazine, 0, inventory[indexCurentWeapon].MaxBulletInMagazine);
 
         StartCoroutine(CantShoot(1 / inventory[0].FireRate));
     }
@@ -199,11 +199,7 @@ public class Player : MonoBehaviour, IPausable
         {
             if (CurrentWeaponState != wState.NoWeapon)
             {
-
-                inventory[8] = inventory[0];
-                inventory[0] = inventory[1];
-                inventory[1] = inventory[8];
-                inventory[8] = null;
+                indexCurentWeapon = - indexCurentWeapon + 1;
                 CheckWeaponState();
             }
         }
@@ -221,11 +217,11 @@ public class Player : MonoBehaviour, IPausable
         {
            if (reloadCondition.Contains(CurrentWeaponState))
             {
-                StartCoroutine(CantShoot(inventory[0].ReloadingCooldown));
+                StartCoroutine(CantShoot(inventory[indexCurentWeapon].ReloadingCooldown));
 
-                int a = inventory[0].MaxBulletInMagazine - inventory[0].CurrentBulletInMagazine - Mathf.Clamp((inventory[0].MaxBulletInMagazine - inventory[0].CurrentAmmoOnPlayer - inventory[0].CurrentBulletInMagazine), 0, 999);
-                inventory[0].CurrentBulletInMagazine += a;
-                inventory[0].CurrentAmmoOnPlayer -= a;
+                int a = inventory[indexCurentWeapon].MaxBulletInMagazine - inventory[indexCurentWeapon].CurrentBulletInMagazine - Mathf.Clamp((inventory[indexCurentWeapon].MaxBulletInMagazine - inventory[indexCurentWeapon].CurrentAmmoOnPlayer - inventory[indexCurentWeapon].CurrentBulletInMagazine), 0, 999);
+                inventory[indexCurentWeapon].CurrentBulletInMagazine += a;
+                inventory[indexCurentWeapon].CurrentAmmoOnPlayer -= a;
 
             }
 
@@ -273,6 +269,7 @@ public class Player : MonoBehaviour, IPausable
             {
                 Time.timeScale = GameSpeed;
                 bonusSpeed = 1 / GameSpeed;
+                anim.SetFloat("SpeedAnimation",1 / GameSpeed);
             }
             else
             {
