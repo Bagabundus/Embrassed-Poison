@@ -6,28 +6,17 @@ using System.Linq;
 
 public class Player : MonoBehaviour, IPausable
 {
-    public enum pState {In_Game,In_Pause,In_Cinematic,Dead };
+
+    #region variables public
     [Space(10)]
-    public pState CurrentPlayerState;
-
-    //bool arme canShoot BulletMagazine Ammo
-    public enum wState
-    {
-        NoWeapon ,
-        Waiting ,
-        NoBullet ,
-        LastBullets ,
-        NeedReload ,
-        FullBullets
-    }
-
+    public mState CurrentPlayerState;
     [Space(10)]
     public wState CurrentWeaponState;
 
     [Space(10)]
     public int health = 10;
 
-    [Space(10)]  
+    [Space(10)]
     public float XSpeed = 5;
 
     [Space(10)]
@@ -44,80 +33,104 @@ public class Player : MonoBehaviour, IPausable
     public Weapon[] inventory = new Weapon[9];
 
     [Space(10)]
-    public KeyCode[] controls = new KeyCode[7] { KeyCode.D , KeyCode.Q, KeyCode.Mouse0, KeyCode.Mouse1, KeyCode.Space, KeyCode.LeftShift, KeyCode.R};
-
-    [Space(10)]
-    public AnimationCurve recoilEffect;
+    public KeyCode[] controls;
 
 
 
+    public enum wState
+    {
+        NoWeapon,
+        locked,
+        Waiting,
+        Reloading,
+        NoBullet,
+        //LastBullets,
+        NeedReload,
+        HaveBullets,
+        MagazineFull
+    }
+    public enum mState
+    {
+        In_Game,
+        In_Pause,
+        In_Cinematic,
+        Dead
+    };
+    #endregion
 
-
+    #region variable private
     private Animator anim;
     private CharacterController charaCTRL;
     private TextMeshProUGUI GameSpeedTMP;
     private RotateLookTarget neck;
     private RotateLookTarget L_Elbow;
     private RotateLookTarget R_Elbow;
-    private BarrelExit barrelExit;
-    private ClonesParticleParent psParent;
+    private AudioSource SFX;
+
 
     [HideInInspector]
     public int MaxHealth;
     [HideInInspector]
     public float GameSpeed = 1;
+    [HideInInspector]
+    public bool hittable;
+    [HideInInspector]
+    public int indexCurentWeapon = 0;
+   [HideInInspector]
+    public TextMeshPro TMPFeedback;
+   [HideInInspector]
+    public GameObject SevenArms;
 
-    private bool hittable;
-    private float bonusSpeed = 1;
+    public float bonusSpeed = 1;
     private float VerticalDirection = 0;
-    private bool canShoot = true;
     private float gravity = 9.8f;
-    private float RecoilTime = 0;
     private Camera mCamera;
-    private int indexCurentWeapon = 0;
+    private BarrelExit barrelExit;
+    private ClonesParticleParent psParent;
+    private HashSet<wState> shootCondition = new HashSet<wState> { wState.HaveBullets, wState.MagazineFull };
+    private HashSet<wState> reloadCondition = new HashSet<wState> { wState.NeedReload, wState.HaveBullets };
+    private SpriteRenderer R_Arm;
+    private SpriteRenderer L_Arm;
+    #endregion
 
-    private HashSet<wState> shootSimpleCondition = new HashSet<wState> {wState.LastBullets, wState.FullBullets};
-    private HashSet<wState> reloadCondition = new HashSet<wState> {wState.NeedReload, wState.FullBullets};
-
-
-    //_________________________________________________________________________________________________________________________________________________________________________________________
-
+    #region start
     private void Start()
     {
-        SetHealth();
-        Initiate();
-        CheckWeaponState();
-    } 
+    SetHealth();
+    Initiate();
+    }
     public void SetHealth()
     {
         MaxHealth = health;
-    } 
+    }
     public void Initiate()
     {
         anim = GetComponent<Animator>();
         charaCTRL = GetComponent<CharacterController>();
+        SFX = GetComponent<AudioSource>();
+
         GameSpeedTMP = FindObjectOfType<TMPUI_GameSpeed>().GetComponent<TextMeshProUGUI>();
         barrelExit = FindObjectOfType<BarrelExit>();
+        psParent = FindObjectOfType<ClonesParticleParent>();
         mCamera = Camera.main;
-
 
         RotateLookTarget[] rotatingSights;
         rotatingSights = FindObjectsOfType<RotateLookTarget>();
         neck = rotatingSights[0];
         L_Elbow = rotatingSights[1];
         R_Elbow = rotatingSights[2];
+        R_Arm = R_Elbow.transform.GetChild(0).GetComponent<SpriteRenderer>();
+        L_Arm = L_Elbow.transform.GetChild(0).GetComponent<SpriteRenderer>();
 
-        barrelExit = FindObjectOfType<BarrelExit>();
-        psParent = FindObjectOfType<ClonesParticleParent>();
+    }
+    #endregion
 
-        canShoot = true;
-    } 
+    #region update
 
-    //_________________________________________________________________________________________________________________________________________________________________________________________
-    
+
     private void Update()
     {
-        if (CurrentPlayerState == pState.In_Game)
+        if (CurrentPlayerState == mState.In_Game)
         {
 
             Mover();
@@ -125,19 +138,19 @@ public class Player : MonoBehaviour, IPausable
             Trigger(2);
             QuickChangeWeapon(3);
             Jump(4);
-            Reload(6,false);
+            //Reload();
 
             UseTime();
         }
-        if (CurrentPlayerState == pState.In_Pause)
+        if (CurrentPlayerState == mState.In_Pause)
         {
             QuickChangeWeapon(3);
         }
-
-    } 
+   
+    }
     public void Mover()
     {
-        charaCTRL.Move(Direction(0, 1) + RecoilValue());
+        charaCTRL.Move(Direction(0, 1));
 
         transform.rotation = Quaternion.Euler(Orientation(0, 1));
 
@@ -151,10 +164,10 @@ public class Player : MonoBehaviour, IPausable
             anim.Play("Displacement.Idle");
         }
 
-    }
+}
     public void Aim()
     {
-        Vector3 target = new Vector3(GetMousePosition().x, GetMousePosition().y, transform.position.z);
+    Vector3 target = new Vector3(GetMousePosition().x, GetMousePosition().y, transform.position.z);
 
         neck.transform.LookAt(target);
         L_Elbow.transform.LookAt(target);
@@ -162,76 +175,45 @@ public class Player : MonoBehaviour, IPausable
     }
     public void Trigger(int triggerInput)
     {
-        if (Input.GetKeyDown(controls[triggerInput]))  
-        {   
-            if (shootSimpleCondition.Contains(CurrentWeaponState)) 
+        if (Input.GetKeyDown(controls[triggerInput]))  // si input
+        {
+            if (shootCondition.Contains(CurrentWeaponState)) // si peut tirer
             {
-                Shoot();
+                StartCoroutine(Shoot());
+
                 if (inventory[indexCurentWeapon].shootingMode == Weapon.mode.semiAutoWithRecoil)
                 {
-
-                    ApplyRecoil();
-                    InvincibilityOnRecoil();
+                    StartCoroutine(ApplyRecoil(1));
+                    StartCoroutine(InvincibilityOnRecoil());
                 }
-
-                CheckWeaponState();
             }
-            else if (CurrentWeaponState == wState.NeedReload) 
+            else if (CurrentWeaponState == wState.NeedReload)  // si ! munition
             {
-                Reload(6, true);
-                CheckWeaponState();
-            }
-        }  
-    } 
-    public void Shoot()
-    {
-        ParticleSystem ps = Instantiate(inventory[indexCurentWeapon].FXBullet, barrelExit.transform.position, barrelExit.transform.rotation, psParent.transform);// spawn tir
-        ps.Play();
-        Destroy(ps.gameObject, 2);
-        inventory[indexCurentWeapon].CurrentBulletInMagazine--; // --ammo
-        inventory[indexCurentWeapon].CurrentBulletInMagazine = Mathf.Clamp(inventory[indexCurentWeapon].CurrentBulletInMagazine, 0, inventory[indexCurentWeapon].MaxBulletInMagazine);
-
-        StartCoroutine(CantShoot(1 / inventory[0].FireRate));
-    }
-    public void QuickChangeWeapon(int QuickChangeWeaponInput)
-    {
-        if (Input.GetKey(controls[QuickChangeWeaponInput]))
-        {
-            if (CurrentWeaponState != wState.NoWeapon)
-            {
-                indexCurentWeapon = - indexCurentWeapon + 1;
-                CheckWeaponState();
+                StartCoroutine(Reload());
             }
         }
-    }  
+    }
+    public void QuickChangeWeapon(int QuiChangeWeaponInput)
+    {
+        if (Input.GetKeyDown(controls[QuiChangeWeaponInput]))
+        {
+            indexCurentWeapon = -indexCurentWeapon + 1;
+            Feedback(inventory[indexCurentWeapon].weaponCategory,new Color(1, 0.45f, 0, 1));
+            R_Arm.sprite = inventory[indexCurentWeapon].R_Arm;
+            L_Arm.sprite = inventory[indexCurentWeapon].L_Arm;
+            CheckWeaponState();
+        }
+    } 
     public void Jump(int JumpInput)
     {
         if (Input.GetKeyDown(controls[JumpInput]) && OnGround() == true)
         {
             VerticalDirection = JumpStrength;
         }
-    } 
-    public void Reload(int ReloadInput, bool trigger)
-    {
-        if((Input.GetKeyDown(controls[ReloadInput]) || trigger == true))
-        {
-           if (reloadCondition.Contains(CurrentWeaponState))
-            {
-                StartCoroutine(CantShoot(inventory[indexCurentWeapon].ReloadingCooldown));
-
-                int a = inventory[indexCurentWeapon].MaxBulletInMagazine - inventory[indexCurentWeapon].CurrentBulletInMagazine - Mathf.Clamp((inventory[indexCurentWeapon].MaxBulletInMagazine - inventory[indexCurentWeapon].CurrentAmmoOnPlayer - inventory[indexCurentWeapon].CurrentBulletInMagazine), 0, 999);
-                inventory[indexCurentWeapon].CurrentBulletInMagazine += a;
-                inventory[indexCurentWeapon].CurrentAmmoOnPlayer -= a;
-
-            }
-
-        }
-        
-
     }
     public void UseTime()
     {
-       
+
         if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
             if (GameSpeed <= 1)
@@ -269,142 +251,163 @@ public class Player : MonoBehaviour, IPausable
             {
                 Time.timeScale = GameSpeed;
                 bonusSpeed = 1 / GameSpeed;
-                anim.SetFloat("SpeedAnimation",1 / GameSpeed);
+                anim.SetFloat("SpeedAnimation", 1 / GameSpeed);
             }
             else
             {
                 Time.timeScale = 1;
                 bonusSpeed = GameSpeed;
             }
-                Time.fixedDeltaTime = 0.02f * Time.timeScale;
+            Time.fixedDeltaTime = 0.02f * Time.timeScale;
+        }
+    }  // à revoir reloading sprite ect..
+
+    #endregion
+
+    public void OnTriggerEnter(Collider col)
+    {
+        if(col.CompareTag("PickupHealth") == true)
+        {
+            health += 5;
+            Destroy(col.gameObject);
+        }
+        if (col.CompareTag("PickupAmmo") == true)
+        {
+            inventory[indexCurentWeapon].CurrentAmmoOnPlayer += 100;
+            Destroy(col.gameObject);
+            CheckWeaponState();
+        }
+        if (col.CompareTag("PickupOctofinity") == true)
+        {
+            OCTOFINITY();
+            Destroy(col.gameObject);
+            CheckWeaponState();
+        }
+        if (col.CompareTag("PickupPistol") == true)
+        {
+            inventory[0].PickupWeapon();
+            Destroy(col.gameObject);
+            CheckWeaponState();
+        }
+        if (col.CompareTag("PickupShotgun") == true)
+        {
+            inventory[1].PickupWeapon();
+            Destroy(col.gameObject);
+            CheckWeaponState();
+        }
+        if (col.CompareTag("PickupSMG") == true)
+        {
+            inventory[2].PickupWeapon();
+            Destroy(col.gameObject);
+            CheckWeaponState();
+        }
+
+        if (col.CompareTag("Exit") == true)
+        {
+            col.transform.parent.GetChild(2).GetComponent<Camera>().enabled = false;
+            mCamera.enabled = true;
+            transform.position = col.transform.parent.position;
+            transform.localScale = col.transform.parent.localScale;
+
         }
     }
-
-    //________________________________________________________________________________________________________________________________________________________________________________________
-    
-    public void OCTOFINITY()
+    public void OnTriggerStay(Collider col)
     {
-        StartCoroutine(Octofinity(10));
-    }
-    public void InvincibilityOnRecoil()
-    {
-        StartCoroutine(InvincibilityOnRecoil(3 * Time.deltaTime));
-    }
-    public void ExchangeWeapon(int w)
-    {
-        Weapon var = inventory[0];
-
-        for (int i = 0; i < inventory.Length; i++)
+        if (col.CompareTag("Entrance") == true)
         {
-            if (inventory[i].ID == w)
+            if(Input.GetKey(controls[8]))
             {
-                inventory[0] = inventory[i];
-                inventory[i] = var;
-                break;
+
+            StartCoroutine(ChangeArea(col.transform.GetChild(0), col.transform.GetChild(0).GetComponent<SphereCollider>(),col.transform.GetChild(2).GetComponent<Camera>()));
+
             }
-        }         
+        }
+        
     }
+
+    public void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireCube(new Vector3(transform.position.x, transform.position.y - 0.05f, transform.position.z), new Vector3(0.3f, 0.1f, 0.3f));
+    }
+
+    #region fonctions
+    public void CheckWeaponState()
+    {
+        if (inventory[indexCurentWeapon].locked == true)
+        {
+            CurrentWeaponState = wState.locked;
+        }                                                                             // mon arme est bloqué
+        else if (inventory[indexCurentWeapon].CurrentBulletInMagazine == inventory[indexCurentWeapon].MaxBulletInMagazine)
+        {
+            CurrentWeaponState = wState.MagazineFull;
+        }           // chargeur remplis
+        else if(inventory[indexCurentWeapon].CurrentBulletInMagazine > 0)
+        {
+            CurrentWeaponState = wState.HaveBullets;
+        }                                                            // j'ai des balles  
+        else if (inventory[indexCurentWeapon].CurrentAmmoOnPlayer > 0) 
+        {
+            CurrentWeaponState = wState.NeedReload;
+        }                                                               // plus de balles dans le chargeur mais j'ai d'autres balles
+        else 
+        {
+            CurrentWeaponState = wState.NoBullet;
+        }                                                                                                                         // plus de balles du tout
+    }      
+    public void ExchangeWeapon(int w)
+{
+    Weapon var = inventory[indexCurentWeapon];
+
+    for (int i = 0; i < inventory.Length; i++)
+    {
+        if (inventory[i].ID == w)
+        {
+            inventory[indexCurentWeapon] = inventory[i];
+            inventory[i] = var;
+            break;
+        }
+    }
+}  // à revoir
     public void OnHit(int damage)
     {
-        if (hittable == true)
-        {
-            health -=damage;
-            health = Mathf.Clamp(health, 0, MaxHealth);
-            anim.SetTrigger("Hit");
+    if (hittable == true)
+    {
+        health -= damage;
+        health = Mathf.Clamp(health, 0, MaxHealth);
+        anim.SetTrigger("Hit");
 
             if (health == 0)
             {
                 Death();
             }
         }
-    } 
-    public void ToggleHittable()
-    {
-        if (hittable == true)
-        {
-            hittable = false;
-        }
-        else if (hittable == false)
-        {
-            hittable = true;
-        }
-    } 
+    }  // à revoir
     public void Death()
     {
+        Feedback("OH NO!", Color.red);
         anim.SetTrigger("Death");
-        CurrentPlayerState = pState.Dead;
+        CurrentPlayerState = mState.Dead;
+    }  // à faire
+    public void Feedback(string text,Color c)
+    {
+        TextMeshPro var = Instantiate(TMPFeedback, transform.position + new Vector3(0,0.5f,0), Quaternion.identity, psParent.transform);
+        var.text = text;
+        var.GetComponent<FeedbackEffect>().c = c;
+
     }
-    public void CheckWeaponState()
+    public void OCTOFINITY()
     {
-        
-        if (inventory[0] != null || inventory[0] != null)
-        {
-            //si j'ai une arme
-            CurrentWeaponState = wState.Waiting;
-
-            if (canShoot == true)
-            {
-                //si je peux tirer
-                CurrentWeaponState = wState.NoBullet;
-
-                if (inventory[0].CurrentBulletInMagazine != 0)
-                {
-                    //si chargeur ! vide
-                    CurrentWeaponState = wState.LastBullets;
-
-                    if (inventory[0].CurrentAmmoOnPlayer != 0)
-                    {
-                        //si j'ai des munitions
-                        CurrentWeaponState = wState.FullBullets;
-                    }
-                }
-                else if  (inventory[0].CurrentBulletInMagazine == 0)
-                {
-                    // si chargeur est vide
-
-                    if (inventory[0].CurrentAmmoOnPlayer != 0)
-                    {
-                        //si j'ai des munitions
-                        CurrentWeaponState = wState.NeedReload;
-                    }
-                }
-
-            }
-        }
-        else if (inventory[0] == null && inventory[1] == null)
-        {
-            //si j'ai pas d'armes
-            CurrentWeaponState = wState.NoWeapon;
-        }
-        
-        
+        Instantiate(SevenArms,R_Elbow.transform.position,R_Arm.transform.rotation,R_Elbow.transform);
     }
-    public void ApplyRecoil()
-    {
-        StartCoroutine(RecoilEffect(1f));
-    }
+    #endregion
 
-    //_________________________________________________________________________________________________________________________________________________________________________________________
-    
-    private void OnTriggerEnter(Collider col)
-    {
-        col.GetComponent<Pickup>().give();
-    } 
+    #region Values
 
-    //_________________________________________________________________________________________________________________________________________________________________________________________
-    
-    public void OnDrawGizmos()
-    {
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireCube(new Vector3(transform.position.x, transform.position.y - 0.05f , transform.position.z), new Vector3(0.3f, 0.1f, 0.3f));
-    } 
-
-    //_________________________________________________________________________________________________________________________________________________________________________________________
-    
     public bool OnGround()
     {
         return Physics.CheckBox(new Vector3(transform.position.x, transform.position.y - 0.05f, transform.position.z), new Vector3(0.3f, 0.1f, 0.3f) / 2);
-    } 
+    }
     public float BetterJumpValue()
     {
         float var = 0;
@@ -418,8 +421,8 @@ public class Player : MonoBehaviour, IPausable
             var = gravity * (lowJumpMultipliyer - 1);
         }
         return var;
-    }
-    public Vector3 Direction(int leftInput,int rightInput)
+    } //?
+    public Vector3 Direction(int leftInput, int rightInput)
     {
         float var = 0;
 
@@ -446,11 +449,11 @@ public class Player : MonoBehaviour, IPausable
 
         VerticalDirection = Mathf.Clamp(VerticalDirection, -100, 100);
 
-        Vector3 direction = new Vector3 (var * XSpeed * bonusSpeed * speedMultiply * Time.deltaTime, VerticalDirection * Time.deltaTime, 0);
+        Vector3 direction = new Vector3(var * XSpeed * bonusSpeed * speedMultiply * Time.deltaTime * transform.localScale.x, VerticalDirection * Time.deltaTime, 0);
 
         return direction;
 
-    } 
+    }
     public Vector3 Orientation(int leftInput, int rightInput)
     {
         float var = 0;
@@ -471,9 +474,55 @@ public class Player : MonoBehaviour, IPausable
         Vector3 position;
         position = mCamera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -mCamera.transform.position.z));
         return position;
-    } //
-    public Vector3 RecoilValue()
+    }
+    #endregion
+
+    #region call from an another script
+    public void ToggleStateToPause()
     {
+        if (CurrentPlayerState == mState.In_Game)
+        {
+            CurrentPlayerState = mState.In_Pause;
+        }
+        else if (CurrentPlayerState == mState.In_Pause)
+        {
+            CurrentPlayerState = mState.In_Game;
+        }
+    }
+    #endregion
+
+    #region coroutines
+    public IEnumerator Shoot()
+    {
+        ParticleSystem ps = Instantiate(inventory[indexCurentWeapon].FXBullet, barrelExit.transform.position, barrelExit.transform.rotation, psParent.transform);
+        ps.Play();
+        Destroy(ps.gameObject, 2);
+        inventory[indexCurentWeapon].CurrentBulletInMagazine--;
+
+        SFX.clip = inventory[indexCurentWeapon].SFXFire;
+        SFX.Play();
+
+        CurrentWeaponState = wState.Waiting;
+        yield return new WaitForSeconds((1 / inventory[indexCurentWeapon].FireRate) / bonusSpeed);
+        CheckWeaponState();
+    }
+    public IEnumerator Reload()
+    {
+        if (reloadCondition.Contains(CurrentWeaponState))
+        {
+            Feedback("Reload !", Color.green);
+            CurrentWeaponState = wState.Reloading;
+            SFX.clip = inventory[indexCurentWeapon].SFXReload;
+            SFX.Play();
+            yield return new WaitForSeconds(inventory[indexCurentWeapon].ReloadingCooldown / bonusSpeed);
+            inventory[indexCurentWeapon].Reload();
+            CheckWeaponState();
+
+        }
+    }
+    public IEnumerator ApplyRecoil(float Timer)
+    {
+        
         float x = transform.position.x;
         float y = transform.position.y;
         float xs = GetMousePosition().x;
@@ -484,80 +533,37 @@ public class Player : MonoBehaviour, IPausable
         a.x = a.x / Mathf.Abs(a.x);
         a.y = a.y / Mathf.Abs(a.y);
 
-        a *= recoilEffect.Evaluate(RecoilTime);
+        Vector3 var = new Vector3(a.x, a.y, 0);
 
-        Vector3 var = new Vector3 (a.x, a.y ,0);
+        var *= Timer / 200;
 
-        return var;
-    } //
+        charaCTRL.Move(var);
 
-    //_________________________________________________________________________________________________________________________________________________________________________________________
-   
-    public void ToggleStateToPause()
-    {
-        if (CurrentPlayerState == pState.In_Game)
+        Timer -= Time.deltaTime;
+        yield return Time.deltaTime;
+        Timer = Mathf.Clamp(Timer, 0, 1);
+
+        if (Timer >= 0)
         {
-            CurrentPlayerState = pState.In_Pause;
-        }
-        else if (CurrentPlayerState == pState.In_Pause)
-        {
-            CurrentPlayerState = pState.In_Game;
+           StartCoroutine(ApplyRecoil(Timer));
         }
     }
-
-    //_________________________________________________________________________________________________________________________________________________________________________________________
-   
-    public IEnumerator Octofinity(float Timer)
+    public IEnumerator InvincibilityOnRecoil()
     {
-        Timer -= Time.deltaTime;
-        Timer = Mathf.Clamp(Timer,0,999);
-        yield return Time.deltaTime;
-        if(Timer != 0)
-        {
-            StartCoroutine(Octofinity(Timer));
-        }
-    } //manque X8 
-    public IEnumerator CantShoot(float Timer)
+        hittable = !hittable;
+        yield return 3 * Time.deltaTime;
+        hittable = !hittable;
+    }
+    public IEnumerator ChangeArea(Transform t,SphereCollider s,Camera c)
     {
-        canShoot = false;
-        Timer -= Time.deltaTime;
-        Timer = Mathf.Clamp(Timer,0,999);
-        yield return Time.deltaTime;
-        if (Timer != 0)
-        {
-            StartCoroutine(CantShoot(Timer));
-        }
-        else
-        {
-            canShoot = true;
-            CheckWeaponState();
-        }
-    } //
-    public IEnumerator InvincibilityOnRecoil(float Timer)
-    {
-        if(Timer <= 0)
-        {
-        hittable = true;
-        }
-        else
-        {
-            hittable = false;
-            Timer -= Time.deltaTime;
-            yield return Time.deltaTime;
-            StartCoroutine(InvincibilityOnRecoil(Timer));
-        }
-    } //
-    public  IEnumerator RecoilEffect(float Timer)
-    {
-        if (Timer <= 0)
-        {
-            RecoilTime = Timer;
-        }
-        else
-        {
-            Timer -= Time.deltaTime;
-            yield return Time.deltaTime;
-            StartCoroutine(RecoilEffect(Timer));
-        }
-    } //
+        mCamera.enabled = false;
+        c.enabled = true;
+        transform.position = t.transform.position;
+        transform.localScale = t.transform.localScale;
+        gravity = 9.8f * transform.localScale.x;
+        s.enabled = false;
+        yield return new WaitForSeconds(0.5f);
+        s.enabled = true;
+    } 
+    #endregion
 }

@@ -12,10 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12d8f2f7398340247abb7ca0e3053478, type: 3}
   m_Name: SMG
   m_EditorClassIdentifier: 
+  locked: 1
   ID: 2
   weaponCategory: SMG
   sprite: {fileID: -8523527078714334145, guid: c9155d5d7362c3e4e8797eb984fa65a9, type: 3}
-  SFX: {fileID: 8300000, guid: 6946c80562ebd7c43b55646ea6f615fa, type: 3}
+  SFXFire: {fileID: 0}
+  SFXReload: {fileID: 0}
+  FXBullet: {fileID: 0}
   Damage: 1
   shootingMode: 0
   MaxBulletInMagazine: 30
@@ -24,4 +27,5 @@ MonoBehaviour:
   CurrentAmmoOnPlayer: 60
   FireRate: 10
   ReloadingCooldown: 1
-  recoil: 0
+  recoilEffect: 0
+  bonusAmmo: 100

@@ -12,17 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12d8f2f7398340247abb7ca0e3053478, type: 3}
   m_Name: Shotgun
   m_EditorClassIdentifier: 
+  locked: 0
   ID: 1
   weaponCategory: Shotgun
   sprite: {fileID: -228314495676143411, guid: cc1596eeda401e1499ebf8960917eca5, type: 3}
-  SFX: {fileID: 8300000, guid: da5d0c793e9a72b4fbae3bf0933ba4d0, type: 3}
+  R_Arm: {fileID: 21300000, guid: 906a985262a06c6479a71a6261d2cabe, type: 3}
+  L_Arm: {fileID: 21300000, guid: 0e89401071a49d446a197076f67ec1ac, type: 3}
+  SFXFire: {fileID: 8300000, guid: da5d0c793e9a72b4fbae3bf0933ba4d0, type: 3}
+  SFXReload: {fileID: 8300000, guid: 1ca8d210fc03c844b99da9ec8e384847, type: 3}
   FXBullet: {fileID: 5092249286905361204, guid: ea3d400fcf5683149adbb06f3e15a58e, type: 3}
   Damage: 2
-  shootingMode: 1
+  shootingMode: 2
   MaxBulletInMagazine: 2
   CurrentBulletInMagazine: 2
   MaxAmmoOnPlayer: 50
-  CurrentAmmoOnPlayer: 20
-  FireRate: 2
+  CurrentAmmoOnPlayer: 16
+  FireRate: 1
   ReloadingCooldown: 1.5
-  recoil: 1
+  recoilEffect: 0
+  bonusAmmo: 20

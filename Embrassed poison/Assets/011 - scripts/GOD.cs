@@ -9,9 +9,8 @@ public class GOD : MonoBehaviour,IPausable
 {
     public enum States { In_Game,In_Pause}
     public States CurrentState = States.In_Game;
-    public ScriptableObject[] allWeapons = new ScriptableObject[8];
 
-    private Player player;
+    private Player p;
     private MonoBehaviour[] MB;
     private Animator anim;
 
@@ -21,7 +20,7 @@ public class GOD : MonoBehaviour,IPausable
     public void Start()
     {
         MB = FindObjectsOfType<MonoBehaviour>();
-        player = FindObjectOfType<Player>();
+        p = FindObjectOfType<Player>();
         anim = GetComponent<Animator>();
 
     }
@@ -40,7 +39,7 @@ public class GOD : MonoBehaviour,IPausable
                 Resume();
             }
         }
-        AmmoRecovery();
+        Debug();
     }
     public void Pause()
     {
@@ -56,7 +55,7 @@ public class GOD : MonoBehaviour,IPausable
     public void Resume()
     {
         anim.Play("Base Layer.Resume");
-        Time.timeScale = player.GameSpeed;
+        Time.timeScale = p.GameSpeed;
         Time.fixedDeltaTime = 0.02f * Time.timeScale;
 
         foreach (IPausable i in MB.Where(x => x is IPausable))
@@ -76,9 +75,13 @@ public class GOD : MonoBehaviour,IPausable
             CurrentState = States.In_Game;
         }
     }
-    public void AmmoRecovery()
+    public void Debug()
     {
-        if(Input.GetKeyDown(KeyCode.F1))
-        player.inventory[0].CurrentAmmoOnPlayer += 100;
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            p.inventory[p.indexCurentWeapon].CurrentAmmoOnPlayer += 100;
+            p.CheckWeaponState();
+        }
+
     }
 }

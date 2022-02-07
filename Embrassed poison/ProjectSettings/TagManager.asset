@@ -3,7 +3,16 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - PickupHealth
+  - PickupAmmo
+  - PickupOctofinity
+  - PickupPistol
+  - PickupShotgun
+  - PickupSMG
+  - Entrance
+  - Exit
+  - PickupBazooka
   layers:
   - Default
   - TransparentFX
@@ -12,7 +21,7 @@ TagManager:
   - Water
   - UI
   - Background&Ground
-  - 
+  - Player
   - 
   - 
   - 

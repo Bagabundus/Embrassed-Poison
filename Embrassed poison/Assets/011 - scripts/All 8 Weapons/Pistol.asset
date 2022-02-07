@@ -12,16 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12d8f2f7398340247abb7ca0e3053478, type: 3}
   m_Name: Pistol
   m_EditorClassIdentifier: 
+  locked: 0
   ID: 0
   weaponCategory: Pistol
   sprite: {fileID: 4162716245915641658, guid: c4e5822bb1603824c9bff94c06874f1d, type: 3}
-  SFX: {fileID: 8300000, guid: 6946c80562ebd7c43b55646ea6f615fa, type: 3}
+  R_Arm: {fileID: 21300000, guid: 6818f4c946a04664dbaf75fd1bd069f8, type: 3}
+  L_Arm: {fileID: 21300000, guid: 54a6c72d32dbf844fa3bb80ced580f19, type: 3}
+  SFXFire: {fileID: 8300000, guid: 6946c80562ebd7c43b55646ea6f615fa, type: 3}
+  SFXReload: {fileID: 8300000, guid: 1ca8d210fc03c844b99da9ec8e384847, type: 3}
   FXBullet: {fileID: 4876596340567561633, guid: ce90a6f55c08c22499f112f539bdaabc, type: 3}
   Damage: 2
   shootingMode: 1
   MaxBulletInMagazine: 10
-  CurrentBulletInMagazine: 0
+  CurrentBulletInMagazine: 4
   MaxAmmoOnPlayer: 100
-  CurrentAmmoOnPlayer: 640
+  CurrentAmmoOnPlayer: 400
   FireRate: 7
   ReloadingCooldown: 1
+  recoilEffect: 0
+  bonusAmmo: 50
